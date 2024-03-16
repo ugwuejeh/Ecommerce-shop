@@ -49,7 +49,7 @@ class Signup(View):
 
         return render(request, 'user/signup.html')
     
-
+    
 class Verify(View):
     def get(self, request):
         return render(request, 'user/verify.html')
@@ -65,76 +65,14 @@ class Verify(View):
                 messages.success(request, 'Success, You are logged in. Create your account here.')
                 return redirect('registerit')
             else:
-                return HttpResponse('The verification code has expired. Please try again.')
+                # If user is not found or OTP is invalid, delete the user 
+                user.delete()
+                messages.error(request, 'Verification failed, signup again.')
+                return redirect('signup')
+            
         except User.DoesNotExist:
-            return HttpResponse('Invalid verification code.')
-
-# class Signup(View):
-
-#     def get(self, request):
-
-#        return render(request, 'user/signup.html')
-        
-
-
-#     def post(self, request):
-#        email  = request.POST['email']
-#        username = request.POST['username']
-#        first_name = request.POST['first_name']
-#        last_name = request.POST['last_name']
-#        if  User.objects.filter(email=email).exists():
-#            return HttpResponse('email exist')
-#        if  User.objects.filter(username=username).exists():
-#            return HttpResponse('username exist')
-#        user = User.objects.create_user(email=email, username=username, first_name=first_name, last_name=last_name)
-    
-
-#        generate_verfication = random.randint(100000, 999999)
-#        user.otp = generate_verfication
-#        user.save()
-
-#        subject = "otp verification"
-#        body = f"your verification code is: {generate_verfication}"
-#        from_email = EMAIL_HOST_USER
-#        toemail =  email
-#        send_now = send_mail(subject, body,from_email, [toemail])
-#        if send_now:
-#            messages.success(request, 'Successful, Verify your email here')
-#            return redirect('verifyit')
-        
-#        return render(request, 'user/signup.html')
-        
-
-
-
-
-# class Verify(View):
-
-#     def get(self, request):    
-#         return render(request, 'user/verify.html')
-
-
-#     def post(self, request):
-#         entered_otp = request.POST['otp']
-#         try: 
-#             user_code = User.objects.get(otp=entered_otp)
-#         except: user_code = None   
-
-#         if user_code:
-#            user_code.is_emailverified = True
-
-#            user_code.save()
-#            login(request, user_code)
-#            messages.success(request, 'Success,You are logged in..Create your account here')
-#            return redirect('registerit')
-#         else:
-#             return HttpResponse('verification code is invalid')
-#             # messages.error(request, 'verification code is invalid')
-
-
-
-
-
+            messages.error(request, 'User not found, signup.')
+            return redirect('signup')
 
 
 class Register(View):
@@ -142,7 +80,6 @@ class Register(View):
     def get(self, request):
         
         return render(request, 'user/page-register.html')
-
 
     def post(self, request):
         # Ensure the user is logged in
